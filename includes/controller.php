@@ -185,6 +185,9 @@ function wpcf7_enqueue_scripts() {
 
 	wp_enqueue_script( 'contact-form-7', wpcf7_plugin_url( 'contact-form-7.js' ),
 		array('jquery', 'jquery-form'), WPCF7_VERSION, $in_footer );
+	
+	wpcf7_register_plugin_scripts();
+	
 }
 
 if ( WPCF7_LOAD_CSS )
@@ -198,6 +201,59 @@ function wpcf7_enqueue_styles() {
 		wp_enqueue_style( 'contact-form-7-rtl', wpcf7_plugin_url( 'stylesheet-rtl.css' ),
 			array(), WPCF7_VERSION, 'all' );
 	}
+	
+	wpcf7_register_plugin_styles();
+}
+
+function wpcf7_register_plugin_scripts() {
+	wpcf7_plugin_include('include_scripts.php');
+}
+
+function wpcf7_register_plugin_styles() {
+	wpcf7_plugin_include('include_styles.php');
+}
+
+function wpcf7_plugin_include($include_file_name){
+	$plugins_path = path_join( WPCF7_PLUGIN_DIR, 'plugins' );
+	
+	if(file_exists($plugins_path) && is_dir($plugins_path)) {
+		
+		$plugins = dirList($plugins_path);
+		
+		foreach ($plugins as $plugin_name) {
+			$plugin_path = path_join( $plugins_path, $plugin_name);
+			
+			$include_file = path_join($plugin_path, $include_file_name);
+			
+			if(file_exists($include_file)) {
+				include($include_file);
+			}
+		}
+	}
+}
+
+function dirList ($directory) 
+{
+
+    // create an array to hold directory list
+    $results = array();
+
+    // create a handler for the directory
+    $handler = opendir($directory);
+
+    // keep going until all files in directory have been read
+    while ($file = readdir($handler)) {
+
+        // if $file isn't this directory or its parent, 
+        // add it to the results array
+        if ($file != '.' && $file != '..')
+            $results[] = $file;
+    }
+
+    closedir($handler);
+
+    return $results;
+
 }
 
 ?>

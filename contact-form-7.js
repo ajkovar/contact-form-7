@@ -38,7 +38,7 @@ function wpcf7ToggleSubmit(form) {
 }
 
 function wpcf7BeforeSubmit(formData, jqForm, options) {
-	wpcf7ClearResponseOutput();
+	wpcf7.clearResponseOutput();
 	jQuery('img.ajax-loader', jqForm[0]).css({ visibility: 'visible' });
 
 	formData.push({name: '_wpcf7_is_ajax_call', value: 1});
@@ -47,26 +47,13 @@ function wpcf7BeforeSubmit(formData, jqForm, options) {
 	return true;
 }
 
-function wpcf7NotValidTip(into, message) {
-	jQuery(into).append('<span class="wpcf7-not-valid-tip">' + message + '</span>');
-	jQuery('span.wpcf7-not-valid-tip').mouseover(function() {
-		jQuery(this).fadeOut('fast');
-	});
-	jQuery(into).find(':input').mouseover(function() {
-		jQuery(into).find('.wpcf7-not-valid-tip').not(':hidden').fadeOut('fast');
-	});
-	jQuery(into).find(':input').focus(function() {
-		jQuery(into).find('.wpcf7-not-valid-tip').not(':hidden').fadeOut('fast');
-	});
-}
-
 function wpcf7ProcessJson(data) {
 	var wpcf7ResponseOutput = jQuery(data.into).find('div.wpcf7-response-output');
-	wpcf7ClearResponseOutput();
+	wpcf7.clearResponseOutput();
 
 	if (data.invalids) {
 		jQuery.each(data.invalids, function(i, n) {
-			wpcf7NotValidTip(jQuery(data.into).find(n.into), n.message);
+			wpcf7.notValidTip(jQuery(data.into).find(n.into), n.message);
 		});
 		wpcf7ResponseOutput.addClass('wpcf7-validation-errors');
 	}
@@ -108,8 +95,25 @@ function wpcf7ProcessJson(data) {
 	wpcf7ResponseOutput.append(data.message).slideDown('fast');
 }
 
-function wpcf7ClearResponseOutput() {
-	jQuery('div.wpcf7-response-output').hide().empty().removeClass('wpcf7-mail-sent-ok wpcf7-mail-sent-ng wpcf7-validation-errors wpcf7-spam-blocked');
-	jQuery('span.wpcf7-not-valid-tip').remove();
-	jQuery('img.ajax-loader').css({ visibility: 'hidden' });
-}
+(function($){
+	if(!window.wpcf7) window.wpcf7={};
+	$.extend(wpcf7, {
+		notValidTip: function (into, message) {
+			wpcf7.showPopup(into, message);
+			into.mouseover(function() {
+				wpcf7.removePopup(into);
+			});
+			into.find(':input').focus(function() {
+				wpcf7.removePopup(into);
+			});
+			
+		},
+		clearResponseOutput: function() {
+			$('div.wpcf7-response-output').hide().empty().removeClass('wpcf7-mail-sent-ok wpcf7-mail-sent-ng wpcf7-validation-errors wpcf7-spam-blocked');
+			//$(into).popup("close");
+			$('img.ajax-loader').css({ visibility: 'hidden' });
+		}
+	});
+}(jQuery));
+
+
